@@ -1,13 +1,14 @@
 import torch
 import os
 import math
-
+import requests
+from io import BytesIO
+from pymongo import MongoClient
 import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
 import torchvision.models as models
 import torchvision.transforms as transforms
-
 from kmeans_pytorch import kmeans
 from PIL import Image
 
@@ -21,6 +22,13 @@ class ImageDetector:
             "efficientnet_b0": self.obtain_classifier,
         }
 
+        # MongoDB setup
+        self.client = MongoClient(
+            "mongodb+srv://api_user:NfuK4XAU6OiTjzrp@lostandfoundcluster.tsmlz.mongodb.net/?retryWrites=true&w=majority&appName=LostAndFoundCluster"
+        )
+        self.db = self.client["LostAndFoundCluster"]
+        self.collection = self.db["LostItems"]
+
         # assign class attributes
         self.architecture = self.validate_model(model_name)
         self.weights = weights
@@ -28,9 +36,6 @@ class ImageDetector:
         self.device = self.set_device()
         self.model = self.initiate_model()
         self.embed = self.assign_layer()
-        self.dataset = {}
-        self.image_clusters = {}
-        self.cluster_centers = {}
 
     def validate_model(self, model_name):
         if model_name not in self.embed_dict.keys():
@@ -95,29 +100,7 @@ class ImageDetector:
 
         return self.model
 
-    def directory_to_list(self, dir):
-        ext = (".png", ".jpg", ".jpeg")
-
-        d = os.listdir(dir)
-        source_list = [os.path.join(dir, f) for f in d if os.path.splitext(f)[1] in ext]
-
-        return source_list
-
-    def validate_source(self, source):
-        # convert source format into standard list of file paths
-        if isinstance(source, list):
-            source_list = [f for f in source if os.path.isfile(f)]
-        elif os.path.isdir(source):
-            source_list = self.directory_to_list(source)
-        elif os.path.isfile(source):
-            source_list = [source]
-        else:
-            raise ValueError('"source" expected as file, list or directory.')
-
-        return source_list
-
-    def embed_image(self, img):
-        # load and preprocess image
+    def calculate_embedding(self, img):
         img = Image.open(img)
         img_trans = self.transform(img)
 
@@ -129,37 +112,87 @@ class ImageDetector:
 
         return self.embed(img_trans)
 
-    def embed_dataset(self, source):
-        # convert source to appropriate format
-        self.files = self.validate_source(source)
+    def embed_image(self, image_url):
+        """
+        Fetch an image from a URL, preprocess it, and compute its embedding.
+        """
+        try:
+            # Fetch the image from the URL
+            response = requests.get(image_url, stream=True)
+            response.raise_for_status()
+            img = Image.open(BytesIO(response.content)).convert("RGB")
 
-        for file in self.files:
-            vector = self.embed_image(file)
-            self.dataset[str(file)] = vector
+            # Preprocess the image
+            img_trans = self.transform(img)
+
+            # Store computational graph on GPU if available
+            if self.device == "cuda:0":
+                img_trans = img_trans.cuda()
+
+            img_trans = img_trans.unsqueeze(0)
+
+            # Compute the embedding
+            embedding = self.embed(img_trans).cpu().detach().numpy().tolist()
+            return embedding
+
+        except Exception as e:
+            print(f"Failed to process image from URL {image_url}: {e}")
+            return None
+
+    def update_missing_embeddings(self):
+        """
+        Iterate over all entries in the database and compute/store embeddings for entries where 'embedding' is missing.
+        """
+        # Query all documents in the collection
+        cursor = self.collection.find({"embedding": {"$exists": False}})
+
+        for document in cursor:
+            image_url = document["image_url"]
+            print(f"Computing embedding for: {image_url}")
+
+            # Compute the embedding
+            embedding = self.embed_image(image_url)
+            if embedding is not None:
+                # Update the document with the new embedding
+                self.collection.update_one(
+                    {"_id": document["_id"]}, {"$set": {"embedding": embedding}}
+                )
+                print(f"Embedding stored for: {image_url}")
+            else:
+                print(f"Skipping due to error: {image_url}")
 
         return
 
-    def similar_images(self, target_file, n=None):
+    def similar_images(self, target_image_url, n=None):
         """
         Function for comparing target image to embedded image dataset
 
         Parameters:
         -----------
-        target_file: str specifying the path of target image to compare
+        target_image_url: str specifying the URL of the target image to compare
             with the saved feature embedding dataset
         n: int specifying the top n most similar images to return
         """
 
-        target_vector = self.embed_image(target_file)
+        # Compute the embedding for the target image
+        target_vector = self.calculate_embedding(target_image_url)
+        if target_vector is None:
+            raise ValueError(
+                f"Failed to compute embedding for target image: {target_image_url}"
+            )
 
-        # initiate computation of consine similarity
+        target_vector = torch.tensor(target_vector).to(self.device)
+
+        # initiate computation of cosine similarity
         cosine = nn.CosineSimilarity(dim=1)
 
         # iteratively store similarity of stored images to target image
         sim_dict = {}
-        for k, v in self.dataset.items():
-            sim = cosine(v, target_vector)[0].item()
-            sim_dict[k] = sim
+        for record in self.collection.find({"embedding": {"$exists": True}}):
+            file_path = record["image_url"]
+            vector = torch.tensor(record["embedding"]).to(self.device)
+            sim = cosine(vector, target_vector)[0].item()
+            sim_dict[file_path] = sim
 
         # sort based on decreasing similarity
         items = sim_dict.items()
@@ -169,105 +202,34 @@ class ImageDetector:
         if n is not None:
             sim_dict = dict(list(sim_dict.items())[: int(n)])
 
-        self.output_images(sim_dict, target_file)
+        self.output_images(sim_dict, target_image_url)
 
         return sim_dict
 
-    def output_images(self, similar, target):
-        self.display_img(target, "original")
+    def output_images(self, similar, target_image_url):
+        self.display_img(target_image_url, "original")
 
         for k, v in similar.items():
             self.display_img(k, "similarity:" + str(v))
 
         return
 
-    def display_img(self, path, title):
-        plt.imshow(Image.open(path))
-        plt.axis("off")
-        plt.title(title)
-        plt.show()
+    def display_img(self, image_url, title):
+        try:
+            response = requests.get(image_url, stream=True)
+            response.raise_for_status()
+            img = Image.open(BytesIO(response.content))
+            plt.imshow(img)
+            plt.axis("off")
+            plt.title(title)
+            plt.show()
+        except Exception as e:
+            print(f"Failed to display image from URL {image_url}: {e}")
 
         return
 
-    def save_dataset(self, path):
-        """
-        Function to save a previously embedded image dataset to file
 
-        Parameters:
-        -----------
-        path: str specifying the output folder to save the tensors to
-        """
-
-        # convert embeddings to dictionary
-        data = {"model": self.architecture, "embeddings": self.dataset}
-
-        torch.save(
-            data, os.path.join(path, "tensors.pt")
-        )  # need to update functionality for naming convention
-
-        return
-
-    def load_dataset(self, source):
-        """
-        Function to save a previously embedded image dataset to file
-
-        Parameters:
-        -----------
-        source: str specifying tensor.pt file to load previous embeddings
-        """
-
-        data = torch.load(source)
-
-        # assess that embedding nn matches currently initiated nn
-        if data["model"] == self.architecture:
-            self.dataset = data["embeddings"]
-        else:
-            raise AttributeError(
-                f'NN architecture "{self.architecture}" does not match the '
-                + f'"{data["model"]}" model used to generate saved embeddings.'
-                + " Re-initiate Img2Vec with correct architecture and reload."
-            )
-
-        return
-
-    def plot_list(self, img_list, cluster_num):
-        fig, axes = plt.subplots(math.ceil(len(img_list) / 2), 2)
-        fig.suptitle(f"Cluster: {str(cluster_num)}")
-        [ax.axis("off") for ax in axes.ravel()]
-
-        for img, ax in zip(img_list, axes.ravel()):
-            ax.imshow(Image.open(img))
-
-        fig.tight_layout()
-
-        return
-
-    def display_clusters(self):
-        for num in self.cluster_centers.keys():
-            # print(f'Displaying cluster: {str(cluster_num)}')
-
-            img_list = [k for k, v in self.image_clusters.items() if v == num]
-            self.plot_list(img_list, num)
-
-        return
-
-    def cluster_dataset(self, nclusters, dist="euclidean", display=False):
-        vecs = torch.stack(list(self.dataset.values())).squeeze()
-        imgs = list(self.dataset.keys())
-        np.random.seed(100)
-
-        cluster_ids_x, cluster_centers = kmeans(
-            X=vecs, num_clusters=nclusters, distance=dist, device=self.device
-        )
-
-        # assign clusters to images
-        self.image_clusters = dict(zip(imgs, cluster_ids_x.tolist()))
-
-        # store cluster centres
-        cluster_num = list(range(0, len(cluster_centers)))
-        self.cluster_centers = dict(zip(cluster_num, cluster_centers.tolist()))
-
-        if display:
-            self.display_clusters()
-
-        return
+# if __name__ == "__main__":
+#     model = ImageDetector("resnet50", weights="DEFAULT")
+#     model.update_missing_embeddings()
+#     similar_images = model.similar_images(target_image_url="/assets/logo.png", n=1)

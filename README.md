@@ -37,3 +37,7 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+- Fianlly to run the streamlit application run:
+```bash
+streamlit run app.py
+```

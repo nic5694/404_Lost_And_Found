@@ -16,19 +16,19 @@ router = APIRouter()
 
 @router.post("/lostitem/add")
 async def say_hello(timeFound: str = Form(...), location: str = Form(...), image: UploadFile = File(...),):
-    mydb = client["LostAndFoundCluster"]
+    mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
 
     url = await ImageController.upload_image(image)
     #TODO: add call to model to give it a description
     description = ""
 
-    entry = {"timeFound"}
+    entry = {"timeFound": timeFound, "location": location, "image_url": url, "description": description, "is_claimed": False}
 
-    x = mycol.insert_one(mydict)
+    x = mycol.insert_one(entry)
     
-    return {"message": f"Hello {name} {url}"}
+    return {"message": f"success"}
 
-@router.get("/hello")
+@router.put("/lostitem/claim/{id}")
 async def say_hello():
     return {"message": "Hello World"}

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Form, File, UploadFile
 from pydantic import BaseModel
 from models import MongoClient
 from . import ImageController
+from bson import ObjectId
 
 client = MongoClient.client
 
@@ -30,5 +31,16 @@ async def say_hello(timeFound: str = Form(...), location: str = Form(...), image
     return {"message": f"success"}
 
 @router.put("/lostitem/claim/{id}")
-async def say_hello():
-    return {"message": "Hello World"}
+async def say_hello(id: str):
+    mydb = client['LostAndFoundCluster']
+    mycol = mydb["LostItems"]
+
+    # Update the item with the given ID
+    result = mycol.update_one({'_id': ObjectId(id)}, {'$set': {'is_claimed': True}}, upsert = False)
+
+    print(result)
+
+    if result.modified_count == 1:
+        return {"message": "Item claimed successfully"}
+    else:
+        return {"message": "Item not found or already claimed"}

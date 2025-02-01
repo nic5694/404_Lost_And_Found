@@ -54,3 +54,4 @@ numpy
 ultralytics 
 folium 
 streamlit-folium
+pymongo[srv]

@@ -1,3 +1,4 @@
+from controllers import LostItemController, LookingForItemController
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from PIL import Image
 import numpy as np
@@ -16,6 +17,8 @@ model.update_missing_embeddings()
 # YOLOv8 model for object detection
 yolo_model = YOLO("yolov8n.pt")  # Load a pre-trained YOLOv8 model
 
+app.include_router(LostItemController.router)
+app.include_router(LookingForItemController.router)
 
 @app.post("/process_image")
 async def process_image(file: UploadFile = File(...)):

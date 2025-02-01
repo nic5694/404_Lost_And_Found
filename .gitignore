@@ -175,3 +175,4 @@ terraform/*.tfstate.*
 terraform/*.backup
 terraform/.terraform/
 terraform/.terraform.lock.hcl
+.DS_Store

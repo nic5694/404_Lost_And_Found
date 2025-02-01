@@ -4,13 +4,13 @@ from PIL import Image
 import numpy as np
 from ultralytics import YOLO
 from similarity_model import ImageDetector
+import streamlit.components.v1 as components
 
 # Resnet50 for image similarity
 model = ImageDetector("resnet50", weights="DEFAULT")
 model.embed_dataset("../assets/images")
 
-# YOLOv8 model for object detection
-yolo_model = YOLO("yolov8n.pt")  # Load a pre-trained YOLOv8 model
+yolo_model = YOLO("yolov8n.pt")  
 
 
 def process_image(img):
@@ -19,27 +19,103 @@ def process_image(img):
     """
     img.save("temp.jpg")
     similar_images = model.similar_images("temp.jpg", n=5)
-
     return similar_images
 
 
-def detect_objects(image):
-    """
-    Detect objects in an image using YOLOv8 and return bounding boxes.
-    """
-    # Perform object detection
-    results = yolo_model(image)
+def display_map():
+    st.header("Google Map with Address Lookup and Marker")
 
-    # Extract bounding boxes, labels, and confidence scores
-    detections = []
-    for result in results:
-        for box in result.boxes:
-            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())  # Bounding box coordinates
-            label = yolo_model.names[int(box.cls)]  # Object label
-            confidence = box.conf.item()  # Confidence score
-            detections.append((x1, y1, x2, y2, label, confidence))
+    google_api_key = "AIzaSyB9C-2uZFowdBBylfeK5XxDw1IHOKBvzOY"
 
-    return detections
+    # Store address in session state to dynamically update it
+    if "address" not in st.session_state:
+        st.session_state["address"] = ""
+
+    # Address input field
+    address_input = st.text_input("Enter an Address:", key="address_input", value=st.session_state["address"])
+
+    # Button to fetch current location
+    if st.button("Use Current Location"):
+        components.html(
+            """
+            <script>
+                function getLocation() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(showPosition, showError);
+                    } else {
+                        alert("Geolocation is not supported by this browser.");
+                    }
+                }
+
+                function showPosition(position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    var coords = lat + ", " + lng;
+
+                    var geocoder = new google.maps.Geocoder();
+                    var latlng = new google.maps.LatLng(lat, lng);
+                    geocoder.geocode({'location': latlng}, function(results, status) {
+                        if (status === 'OK' && results[0]) {
+                            var address = results[0].formatted_address;
+                            window.parent.postMessage(JSON.stringify({ "coords": coords, "address": address }), "*");
+                        } else {
+                            window.parent.postMessage(JSON.stringify({ "coords": coords, "address": "Unknown Location" }), "*");
+                        }
+                    });
+                }
+
+                function showError(error) {
+                    let message = "Unknown error";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = "User denied the request for Geolocation.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = "Location information is unavailable.";
+                            break;
+                        case error.TIMEOUT:
+                            message = "The request to get user location timed out.";
+                            break;
+                    }
+                    alert(message);
+                }
+
+                getLocation();
+            </script>
+            """,
+            height=0
+        )
+
+    # Ensure the map always loads
+    default_location = "45.49735595451695,-73.57950983145975"  
+    map_html = f'''
+        <iframe id="googleMap" width="100%" height="600" frameborder="0" style="border:0" 
+        src="https://www.google.com/maps/embed/v1/place?key={google_api_key}&q={address_input or default_location}" 
+        allowfullscreen></iframe>
+    '''
+    components.html(map_html, height=600)
+
+    # Listen for messages from JavaScript and update the address in session_state
+    components.html(
+        """
+        <script>
+            window.addEventListener("message", function(event) {
+                if (event.origin !== "http://localhost:8501") return;
+
+                var data = JSON.parse(event.data);
+                if (data.address) {
+                    // Send the address back to Streamlit
+                    window.parent.document.dispatchEvent(new CustomEvent("update_address", {detail: data.address}));
+                }
+            }, false);
+        </script>
+        """,
+        height=0,
+    )
+
+    # JavaScript event listener in Streamlit
+    st.session_state["address"] = st.experimental_get_query_params().get("address", [""])[0]
+
 
 
 def measure_object_size(box, reference_object_width_px, reference_object_width_cm):
@@ -101,6 +177,8 @@ def draw_boxes(
 def main():
     st.image("../assets/logo.png", width=400)
 
+    st.header("Object Detection & Image Similarity with Google Maps")
+
     # Let the user choose between real-time video and taking a picture
     mode = st.radio("Choose input mode:", ("Take a Picture", "Real-Time Video"))
 
@@ -112,6 +190,7 @@ def main():
         "Enter the width of the reference object (in pixels):", min_value=1, value=100
     )
 
+    # Object Detection Section
     if mode == "Take a Picture":
         # Capture image from webcam
         img_file_buffer = st.camera_input("Take a picture")
@@ -204,11 +283,14 @@ def main():
                     col.image(
                         resized_img,
                         caption=f"Similarity: {similarity:.2f}",
-                        use_container_width_width=True,
+                        use_container_width=True,
                     )
 
         # Release the webcam when inference is stopped
         cap.release()
+
+    # Google Maps
+    display_map()
 
 
 if __name__ == "__main__":

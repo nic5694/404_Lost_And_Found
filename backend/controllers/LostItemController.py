@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from models import MongoClient
 from . import ImageController
 from bson import ObjectId
+from bson.json_util import dumps
 
 client = MongoClient.client
 
@@ -38,9 +39,18 @@ async def say_hello(id: str):
     # Update the item with the given ID
     result = mycol.update_one({'_id': ObjectId(id)}, {'$set': {'is_claimed': True}}, upsert = False)
 
-    print(result)
-
     if result.modified_count == 1:
         return {"message": "Item claimed successfully"}
     else:
         return {"message": "Item not found or already claimed"}
+    
+@router.get("/lostitem/getAll")
+async def getALLURLs():
+    mydb = client['LostAndFoundCluster']
+    mycol = mydb["LostItems"]
+
+    items = mycol.find({})
+    items_list = list(items)  # Convert cursor to list
+    items_json = dumps(items_list)  # Convert list to JSON
+
+    return {"items": items_json}

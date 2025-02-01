@@ -3,8 +3,8 @@ on:
   push:
     branches:
       - 'main'
-    paths:
-      - 'backend/**'
+    # paths:
+    #   - 'backend/**'
 jobs:
   build:
     name: 'Build and Push to ACR'

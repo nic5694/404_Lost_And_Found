@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from controllers import LostItemController, LookingForItemController
 
 app = FastAPI()
 
@@ -8,6 +9,5 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+app.include_router(LostItemController.router)
+app.include_router(LookingForItemController.router)

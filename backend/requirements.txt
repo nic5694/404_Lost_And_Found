@@ -1,3 +1,6 @@
 fastapi
-uvicorn
+uvicorn 
 motor
+python-dotenv
+azure-storage-blob
+python-multipart

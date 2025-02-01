@@ -1,3 +1,16 @@
 fastapi
 uvicorn
 motor
+streamlit
+numpy
+torch
+torchvision
+transformers
+ultralytics
+pandas
+opencv-python
+pillow
+kmeans-pytorch
+fastapi
+python-multipart
+flask

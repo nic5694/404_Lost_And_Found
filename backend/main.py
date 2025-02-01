@@ -5,12 +5,14 @@ import numpy as np
 from ultralytics import YOLO
 from similarity_model import ImageDetector
 import io
+from pymongo import MongoClient
+import gridfs
 
 app = FastAPI()
 
 # Resnet50 for image similarity
 model = ImageDetector("resnet50", weights="DEFAULT")
-model.embed_dataset("./assets/images")  # TODO: Link with DB
+model.update_missing_embeddings()
 
 # YOLOv8 model for object detection
 yolo_model = YOLO("yolov8n.pt")  # Load a pre-trained YOLOv8 model
@@ -58,6 +60,9 @@ async def detect_objects(file: UploadFile = File(...)):
 
     return detections
 
+@app.get("/healthcheck")
+async def healthcheck():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -2,12 +2,12 @@ name: Build and Push to ACR
 on:
   push:
     branches:
-      - 'main'
-    # paths:
-    #   - 'backend/**'
+      - "main"
+    paths:
+      - "backend/**"
 jobs:
   build:
-    name: 'Build and Push to ACR'
+    name: "Build and Push to ACR"
     runs-on: ubuntu-latest
 
     defaults:
@@ -28,6 +28,6 @@ jobs:
       - name: Build and Push to ACR
         uses: docker/build-push-action@v2
         with:
+          context: ./backend
           push: true
           tags: ${{ secrets.AZURE_URL }}/backend:latest
-          file: ./backend/Dockerfile

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form, File, UploadFile
 from pydantic import BaseModel
 from models import MongoClient
-from service import ImageUploadService
+from service import ImageUploadService, ImageAnalyzerService
 from bson import ObjectId
 from bson.json_util import dumps
 import random
@@ -9,6 +9,7 @@ import string
 
 client = MongoClient.client
 upload_service = ImageUploadService.ImageUploadService()
+image_analyzer_service = ImageAnalyzerService.ImageAnalyzerService()
 
 class LostItem(BaseModel):
     image_url: str 
@@ -23,22 +24,18 @@ def id_generator(size=32, chars=string.ascii_uppercase + string.digits):
 router = APIRouter()
 
 @router.post("/lostitem/add")
-async def say_hello(timeFound: str = Form(...), latitude: float =  Form(...), longitude: float =  Form(...), image: UploadFile = File(...)):
+async def add_new_lost_item(timeFound: str = Form(...), latitude: float =  Form(...), longitude: float =  Form(...), image: UploadFile = File(...)):
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
     image.filename = id_generator() + '.' + ".jpg"
     url = await upload_service.upload_image(image)
-    #TODO: add call to model to give it a description
-    description = ""
-
+    description = image_analyzer_service.analyze_image_object(url)
     entry = {"timeFound": timeFound, "location": [latitude,longitude], "image_url": url, "description": description, "is_claimed": False}
-
     x = mycol.insert_one(entry)
-    
     return {"message": f"success"}
 
 @router.put("/lostitem/claim/{id}")
-async def say_hello(id: str):
+async def update_lost_item(id: str):
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
 

@@ -9,7 +9,8 @@ import json
 
 # Backend URL
 BACKEND_URL = (
-    "https://404lostandfound-aserdfh2csb8cmfh.canadacentral-01.azurewebsites.net"
+    # "https://404lostandfound-aserdfh2csb8cmfh.canadacentral-01.azurewebsites.net"
+    "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000"
 )
 
 BACKUP_URL = (

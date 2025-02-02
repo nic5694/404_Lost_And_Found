@@ -17,7 +17,21 @@ BACKEND_URL = (
 
 BACKUP_URL = "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000/"
 
-google_api_key = "AIzaSyB9C-2uZFowdBBylfeK5XxDw1IHOKBvzOY"
+GOOGLE_API = "AIzaSyB9C-2uZFowdBBylfeK5XxDw1IHOKBvzOY"
+
+
+def show_directions(location):
+    """
+    Display directions to the location using Google Maps embed.
+    """
+    lat, lon = location
+    st.write(f"Directions to the Location ({lat}, {lon})")
+    st.write(
+        f'<iframe width="100%" height="400" frameborder="0" style="border:0" '
+        f'src="https://www.google.com/maps/embed/v1/directions?origin=current+location&destination={lat},{lon}&key={GOOGLE_API}" '
+        f"allowfullscreen></iframe>",
+        unsafe_allow_html=True,
+    )
 
 
 def upload_lost_item(image, address):
@@ -189,6 +203,7 @@ def main():
                     f"A match is found!", key=object["_id"], use_container_width=True
                 ):
                     claim(object["_id"], object["location"])
+                    show_directions(object["location"])
 
             st.write("Couldn't find your image here?")
             # Button to open the popup for uploading the lost item
@@ -235,11 +250,11 @@ def main():
                 st.write("Similar Images:")
                 cols = st.columns(len(similar_images))  # Create columns for each image
                 for (img_url, similarity), col in zip(similar_images.items(), cols):
-                    
+
                     object = get_item_by_field(list_data, img_url)
                     if object["is_claimed"]:
                         continue
-                    
+
                     # Fetch the image from the URL
                     img_response = requests.get(img_url)
                     img = Image.open(io.BytesIO(img_response.content)).resize(
@@ -251,10 +266,12 @@ def main():
                         use_container_width=True,
                     )
                     if col.button(
-                        f"A match is found!", key=object["_id"], use_container_width=True
+                        f"A match is found!",
+                        key=object["_id"],
+                        use_container_width=True,
                     ):
                         claim(object["_id"], object["location"])
-
+                        show_directions(object["location"])
 
     with tab3:
         # OpenCV webcam capture
@@ -325,11 +342,11 @@ def main():
                 st.write("Similar Images:")
                 cols = st.columns(len(similar_images))  # Create columns for each image
                 for (img_url, similarity), col in zip(similar_images.items(), cols):
-                    
+
                     object = get_item_by_field(list_data, img_url)
                     if object["is_claimed"]:
                         continue
-                    
+
                     # Fetch the image from the URL
                     img_response = requests.get(img_url)
                     img = Image.open(io.BytesIO(img_response.content)).resize(
@@ -341,7 +358,9 @@ def main():
                         use_container_width=True,
                     )
                     if col.button(
-                        f"A match is found!", key=object["_id"], use_container_width=True
+                        f"A match is found!",
+                        key=object["_id"],
+                        use_container_width=True,
                     ):
                         claim(object["_id"], object["location"])
 

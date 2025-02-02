@@ -252,9 +252,9 @@ class ImageDetector:
         images_with_similarity = []
         tries = 0
         for record in self.collection.find({}):
-            score = "a"
+            score = -1
             tries = 0
-            while score > 1.0 and score < 0.0:
+            while score >= 1.0 and score <= 0.0:
                 tries += 1
                 if tries > 5:
                     record["similarity"] = 0.0
@@ -269,9 +269,9 @@ class ImageDetector:
                 try:
                     score = float(completion.choices[0].message.content)
                 except:
-                    score = "a"
+                    score = -1
             
-            if score != "a":
+            if score != -1:
                 record["similarity"] = score
             
             images_with_similarity.append(record)

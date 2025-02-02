@@ -51,3 +51,11 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+#### How to configure cloud infrastructure
+Many of the infrastructure is set up in terraform once it is set up to run locally you will need to add a .env file and add the values to the secrets and keys that you can find in the azure ressources once you deploy. Here are a list of environment variables you need to retreive:
+MONGO_CONNECTION_STRING=
+AZURE_STORAGE_CONNECTION_STRING=
+CONTAINER=
+AZURE_STORAGE_SAS_URL=
+VISION_KEY=
+VISION_ENDPOINT=

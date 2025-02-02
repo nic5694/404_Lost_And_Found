@@ -1,0 +1,6 @@
+streamlit
+streamlit-option-menu
+pillow
+opencv-python
+numpy
+requests

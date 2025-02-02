@@ -29,6 +29,17 @@ async def process_image(file: UploadFile = File(...)):
     return similar_images
 
 
+@app.post("/upload")
+async def upload_to_db(file: UploadFile = File(...)):
+    if file.filename == "":
+        raise HTTPException(status_code=400, detail="No selected file")
+
+    # img = Image.open(io.BytesIO(await file.read()))
+    # img.save("temp.jpg")
+    # similar_images = model.similar_images("temp.jpg", n=5)
+    return
+
+
 @app.get("/test_ml")
 async def test_ml():
     similar_images = model.similar_images("./assets/logo.png", n=5)

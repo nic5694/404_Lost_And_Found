@@ -6,4 +6,5 @@ numpy
 requests
 datetime
 folium
-stramlit-folium
+streamlit-folium
+plotly

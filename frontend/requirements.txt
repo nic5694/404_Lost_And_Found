@@ -4,5 +4,6 @@ pillow
 opencv-python
 numpy
 requests
+datetime
 folium
 stramlit-folium

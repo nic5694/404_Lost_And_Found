@@ -1,6 +1,41 @@
 # 404 Lost & Found
 Ever lost something precious and wished you had a digital detective on your side? Meet 404 Lost&Found – your AI-powered personal item finder and data visualization tool
-- ConUHacks 2025
+
+---
+
+## 📖 Overview  
+**404: Lost & Found** is an intelligent lost-and-found platform that combines **YOLO for real-time object detection** and **ResNet for image similarity scoring** to help users identify and recover lost items. Deployed on **Azure Web Apps**, this system features:
+
+- 🎯 **Custom object detection** (YOLO) for precise item localization
+- 🔍 **ResNet-based similarity scoring** for matching lost/found items
+- ☁️ **Cloud-native architecture** with Azure Blob Storage and MongoDB
+
+---
+
+## ✨ Key Features  
+- **Real-Time Object Detection**: YOLO model identifies items in uploaded images (e.g., "laptop", "backpack", "keys").  
+- **Visual Similarity Search**: ResNet-50 generates embeddings for similarity comparisons between items.  
+- **Scalable Storage**: Azure Blob Storage manages item images with metadata stored in MongoDB.  
+- **FastAPI Backend**: High-performance API endpoints for seamless integration.  
+
+---
+
+## 🛠️ Tech Stack  
+### **AI/ML Core**  
+![YOLO](https://img.shields.io/badge/-YOLO-00FFFF?logo=python&logoColor=white)
+![ResNet](https://img.shields.io/badge/-ResNet-FF6F00?logo=pytorch&logoColor=white)  
+- **YOLOv5** for object detection and bounding box generation  
+- **ResNet-50** (pre-trained + fine-tuned) for feature extraction and similarity scoring
+- **Azure AI Vision** Pre trained caption generation model
+
+### **Backend & Cloud**  
+![FastAPI](https://img.shields.io/badge/-FastAPI-009688?logo=fastapi&logoColor=white)
+![Azure](https://img.shields.io/badge/-Azure-0089D6?logo=microsoft-azure&logoColor=white)
+![MongoDB](https://img.shields.io/badge/-MongoDB-47A248?logo=mongodb&logoColor=white)  
+- **FastAPI** REST API with Python 3.10+  
+- **Azure Web Apps** (PaaS) for API deployment  
+- **Azure Blob Storage** for image management  
+- **MongoDB Atlas** for item metadata storage
 
 ## How to run the project
 

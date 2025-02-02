@@ -11,6 +11,7 @@ import io
 from pymongo import MongoClient
 import gridfs
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 app = FastAPI()
@@ -43,9 +44,8 @@ async def process_image(file: UploadFile = File(...)):
     img = Image.open(io.BytesIO(await file.read()))
     img.save("temp.jpg")
     similar_images, image_id_map = model.similar_images("temp.jpg", n=5)
-    print(similar_images)
-    print(image_id_map)
-    return {"similar_images": similar_images, "image_id_map": image_id_map}
+    
+    return {"similar_images": json.dumps(similar_images), "image_id_map": json.dumps(image_id_map)}
 
 
 @app.post("/upload")

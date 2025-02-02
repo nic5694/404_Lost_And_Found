@@ -210,50 +210,50 @@ def main():
                         else:
                             st.warning("Please provide an address to add the item.")
     with tab2:
-        # Text input for description
-        location = st.text_input(
-            "Location (latitude, longitude)", value="45.4954, 73.5791"
-        )
         description = st.text_area("Enter a description of the item")
 
         if st.button("Search Lost Item"):
-            # Parse the location into a list of floats
-            lat, lon = map(float, location.split(","))
-            location_list = [lat, lon]
-
-            data = {
-                "description": description,
-            }
 
             # Fetch all items from the database
             items_response = requests.get(BACKEND_URL + "/lostitem/getAll")
             API_Data = items_response.json()
             list_data = json.loads(API_Data["items"])
 
-            # Display the similar images in a single row
-            with result_placeholder.container():
-                st.write("Similar Images:")
-                cols = st.columns(len(similar_images))  # Create columns for each image
-                for (img_url, similarity), col in zip(similar_images.items(), cols):
+            similar_images = []
+
+            for item in list_data:
+                body = { 'text_1': item["description"], 'text_2':  description}
+                api_url = 'https://api.api-ninjas.com/v1/textsimilarity'
+                response = requests.post(api_url, headers={'X-Api-Key': 'UKbTdvWcZJQ5NuWmE9SnMQ==GtERVqCeop3rWdy0'}, json=body)
+                if response.status_code == requests.codes.ok:
+                    item["similarity"] = float(json.loads(response.text)['similarity'])
+                    similar_images.append(item)
+                else:
+                    print("Error:", response.status_code, response.text)
+
+
+            sorted_items = sorted(similar_images, key=lambda x: x["similarity"], reverse=True)
+            # Take the first n items
+            top_items = sorted_items[:5]
+
+            st.write("Similar Images:")
+            cols = st.columns(len(top_items))  # Create columns for each image
+            for item, col in zip(top_items, cols):
                     
-                    object = get_item_by_field(list_data, img_url)
-                    if object["is_claimed"]:
-                        continue
-                    
-                    # Fetch the image from the URL
-                    img_response = requests.get(img_url)
-                    img = Image.open(io.BytesIO(img_response.content)).resize(
-                        (150, 150)
-                    )  # Resize the image
-                    col.image(
-                        img,
-                        caption=f"Similarity: {similarity:.2f}",
-                        use_container_width=True,
-                    )
-                    if col.button(
-                        f"A match is found!", key=object["_id"], use_container_width=True
-                    ):
-                        claim(object["_id"], object["location"])
+                # Fetch the image from the URL
+                img_response = requests.get(item["image_url"])
+                img = Image.open(io.BytesIO(img_response.content)).resize(
+                    (150, 150)
+                )  # Resize the image
+                col.image(
+                    img,
+                    caption=f"Similarity: {item["similarity"]:.2f}",
+                    use_container_width=True,
+                )
+                if col.button(
+                    f"A match is found!", key=item["_id"], use_container_width=True
+                ):
+                    claim(item["_id"], item["location"])
 
 
     with tab3:

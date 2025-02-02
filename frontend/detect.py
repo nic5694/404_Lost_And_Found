@@ -225,7 +225,8 @@ def main():
                 "description": description,
             }
 
-            
+            response = requests.post(f"{BACKEND_URL}/similar_description", data=data)
+            print(response)
 
     with tab3:
         # OpenCV webcam capture

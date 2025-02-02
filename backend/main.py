@@ -1,5 +1,5 @@
 from controllers import LostItemController
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from PIL import Image
 import numpy as np
 from ultralytics import YOLO

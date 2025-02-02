@@ -45,15 +45,24 @@ def log_to_console(message: str) -> None:
 """
     components.html(js_code)
 
-def get_key_by_value(d, value):
+def get_item_by_field(list_data, value):
     """
-    Returns the first key in the dictionary `d` that matches the given `value`.
-    If no matching key is found, returns None.
+    Returns the first item in the list `list_data` where the `field` matches the given `value`.
+    If no matching item is found, returns None.
     """
-    for key, val in d.items():
-        if val == value:
-            return key
-    return None
+    for item in list_data:
+        if item.get("image_url") == value:
+            return item
+
+def claim(item_id, location):
+    #TODO: cahnge back to real URL
+    response = requests.put(BACKUP_URL + "/lostitem/claim/" + item_id)
+
+    if response.status_code == 200:
+        #TODO: route to map directions page and put location from directions
+        st.success("Item claimed!")
+    else:
+        st.error("Failed to claim item")
 
 def main():
     st.image("./assets/logo.png", width=400)
@@ -106,7 +115,19 @@ def main():
             try:
                 parsed_response = response.json()
                 similar_images = json.loads(parsed_response["similar_images"])
-                image_id_map = json.loads(parsed_response["image_id_map"])
+                
+                #absolute vomit code, but eh it works
+                items_response = requests.get(BACKUP_URL + "/lostitem/getAll")
+
+                API_Data = items_response.json()
+                list_data  = json.loads(API_Data["items"])
+                good_list = []
+
+                for item  in similar_images.items():
+                    object = get_item_by_field(list_data, item[0])
+                    if object is not None:
+                        good_list.append(object)
+
             except requests.exceptions.JSONDecodeError:
                 st.error("Failed to decode JSON response")
                 return
@@ -116,7 +137,10 @@ def main():
             st.write("Similar Images:")
             cols = st.columns(len(similar_images))  # Create columns for each image
             for (img_url, similarity), col in zip(similar_images.items(), cols):
-                object_id = get_key_by_value(image_id_map, img_url)
+                
+                object = get_item_by_field(list_data, img_url) 
+                if object["is_claimed"]:    
+                    continue
                 # Fetch the image from the URL
                 img_response = requests.get(img_url)
                 img = Image.open(io.BytesIO(img_response.content)).resize(
@@ -127,8 +151,8 @@ def main():
                     caption=f"Similarity: {similarity:.2f}",
                     use_container_width=True,
                 )
-                if st.button(f"I lost this!", key = object_id, use_container_width=True):
-                    claim(object_id, location)
+                if col.button(f"I lost this!", key = object["_id"], use_container_width=True):
+                    claim(object["_id"], object["location"])
 
             st.write("Couldn't find your image here?")
             # Button to push the image to the database

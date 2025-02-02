@@ -1,7 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import warnings
-
 
 def display_map():
     st.header("Google Map Direction")

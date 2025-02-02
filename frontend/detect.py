@@ -151,12 +151,11 @@ def main():
             st.write("Couldn't find your image here?")
             # Button to push the image to the database
             if st.button("Declare Lost Item"):
-                print("test")
-                # response = requests.post(f"{BACKEND_URL}/save_image", files=files)
-                # if response.status_code == 200:
-                #     st.success("Image successfully pushed to the database")
-                # else:
-                #     st.error("Failed to push image to the database")
+                response = requests.post(f"{BACKEND_URL}/upload", files=files)
+                if response.status_code == 200:
+                    st.success("Image successfully pushed to the database")
+                else:
+                    st.error("Failed to push image to the database")
 
         # Display the Google Map
         display_map()

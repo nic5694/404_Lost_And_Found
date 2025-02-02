@@ -38,14 +38,18 @@ async def get_locations():
 
 @app.post("/process_image")
 async def process_image(file: UploadFile = File(...)):
+    model.update_missing_embeddings()
     if file.filename == "":
         raise HTTPException(status_code=400, detail="No selected file")
 
     img = Image.open(io.BytesIO(await file.read()))
     img.save("temp.jpg")
     similar_images, image_id_map = model.similar_images("temp.jpg", n=5)
-    
-    return {"similar_images": json.dumps(similar_images), "image_id_map": json.dumps(image_id_map)}
+
+    return {
+        "similar_images": json.dumps(similar_images),
+        "image_id_map": json.dumps(image_id_map),
+    }
 
 
 @app.post("/upload")

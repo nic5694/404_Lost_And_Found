@@ -17,6 +17,47 @@ BACKEND_URL = (
 
 BACKUP_URL = "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000/"
 
+google_api_key = "AIzaSyB9C-2uZFowdBBylfeK5XxDw1IHOKBvzOY"
+
+
+def upload_lost_item(image, address):
+    """
+    Upload the lost item to the database.
+    """
+    # Convert the image to bytes
+    img_bytes = io.BytesIO()
+    image.save(img_bytes, format="JPEG")
+    img_bytes.seek(0)
+
+    # Geocode the address to get latitude and longitude
+    geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={google_api_key}"
+    response = requests.get(geocode_url)
+    data = response.json()
+
+    lat = None
+    lng = None
+    if data["status"] == "OK":
+        lat = data["results"][0]["geometry"]["location"]["lat"]
+        lng = data["results"][0]["geometry"]["location"]["lng"]
+
+    if lat is not None and lng is not None:
+        # Prepare the data for the API request
+        files = {"image": img_bytes.getvalue()}
+        data = {
+            "longitude": lng,
+            "latitude": lat,
+            "timeFound": str(datetime.datetime.now()),
+        }
+
+        # Send the request to the backend
+        response = requests.post(f"{BACKEND_URL}/lostitem/add", files=files, data=data)
+        if response.status_code == 200:
+            st.success("Item reported successfully!")
+        else:
+            st.error("Failed to report item")
+    else:
+        st.warning("Invalid address. Please provide a valid address.")
+
 
 def draw_boxes(image, detections):
     """
@@ -54,19 +95,6 @@ def claim(item_id, location):
         st.success("Item claimed!")
     else:
         st.error("Failed to claim item")
-
-
-def upload_lost_item(files, location, description):
-    """
-    Upload the lost item to the database.
-    """
-    data = {
-        "location": location,
-        "timeFound": str(datetime.datetime.now()),
-        "description": description,
-    }
-    response = requests.post(f"{BACKEND_URL}/lostitem/add", files=files, data=data)
-    return response
 
 
 def main():
@@ -167,31 +195,20 @@ def main():
             if st.button("Declare Lost Item"):
                 with st.form("upload_lost_item_form"):
                     st.write("Upload Lost Item")
-                    # Allow the user to input location and description
-                    location = st.text_input(
-                        "Location (latitude, longitude)", value="45.4954, 73.5791"
-                    )
-                    description = st.text_area(
-                        "Description", value="Sample description"
+                    # Allow the user to input address
+                    address = st.text_input(
+                        "Enter the Address:",
+                        key="address_input",
+                        value=st.session_state.get("address", ""),
                     )
 
                     # Submit button
                     if st.form_submit_button("Upload"):
-                        try:
-                            # Parse the location into a list of floats
-                            lat, lon = map(float, location.split(","))
-                            location_list = [lat, lon]
-
-                            # Upload the lost item
-                            response = upload_lost_item(
-                                files, location_list, description
-                            )
-                            if response.status_code == 200:
-                                st.write("Item reported successfully!")
-                            else:
-                                st.error("Failed to report item")
-                        except Exception as e:
-                            st.error(f"Failed to upload item: {e}")
+                        if address:
+                            st.session_state["address"] = address
+                            upload_lost_item(img_pil, address)
+                        else:
+                            st.warning("Please provide an address to add the item.")
     with tab2:
         # Text input for description
         location = st.text_input(

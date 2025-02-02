@@ -50,7 +50,12 @@ async def getALLURLs():
     mycol = mydb["LostItems"]
 
     items = mycol.find({})
-    items_list = list(items)  # Convert cursor to list
-    items_json = dumps(items_list)  # Convert list to JSON
+    items_list = list(items) 
+    smaller_list = []
+    
+    for item in items_list:
+         smaller_list.append({"_id":item["_id"] ,"image_url": item["image_url"], "description": item["description"], "time_found": item["timeFound"], "is_claimed": item["is_claimed"]})
+    
+    items_json = dumps(smaller_list)  # Convert list to JSON
 
     return {"items": items_json}

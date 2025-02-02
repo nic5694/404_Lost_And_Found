@@ -6,9 +6,14 @@ from dateutil import parser
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
+import streamlit.components.v1 as components
 
 BACKEND_URL = (
     "https://404lostandfound-aserdfh2csb8cmfh.canadacentral-01.azurewebsites.net"
+)
+
+BACKUP_URL = (
+    "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000/"
 )
 
 items = [
@@ -63,29 +68,39 @@ items = [
 ]
 
 def main():
-    # response = requests.get(BACKEND_URL + "/lostitem/getAll")
+    #TODO: change to real URL
+    response = requests.get(BACKUP_URL + "/lostitem/getAll")
 
-    # API_Data = response.json()
-    # list_data  = json.loads(API_Data["items"])
+    API_Data = response.json()
+    list_data  = json.loads(API_Data["items"])
+    list_data = filter(lambda x: not x["is_claimed"], list_data)
+    
     st.title("Browse Objects")
 
     cols = st.columns(3)
                       
-    for index, item in enumerate(items):
-        if not item["is_claimed"]:
-            col = cols[index % 3]  # Cycle through columns
-            with col:
-                card(item["image_url"], item["description"], item["timeFound"], item["_id"], item["location"])
+    for index, item in enumerate(list_data):
+        col = cols[index % 3]  # Cycle through columns
+        with col:
+            card(item["image_url"], item["description"], item["timeFound"], item["_id"], item["location"])
 
-def claim(item_id):
-    #TODO: once server is up see if call does what it is supposed to
-    response = requests.post(BACKEND_URL + "/lostitem/claim/" + item_id)
+def claim(item_id, location):
+    #TODO: cahnge back to real URL
+    response = requests.put(BACKUP_URL + "/lostitem/claim/" + item_id)
 
     if response.status_code == 200:
         #TODO: route to map directions page and put location from directions
         st.success("Item claimed!")
     else:
         st.error("Failed to claim item")
+
+def log_to_console(message: str) -> None:
+    js_code = f"""
+<script>
+    console.log({json.dumps(message)});
+</script>
+"""
+    components.html(js_code)
 
 def card(image_url, description, time_found, item_id, location):
     time_found_date = parser.parse(time_found)
@@ -99,7 +114,7 @@ def card(image_url, description, time_found, item_id, location):
     </div>
     ''')
     if st.button(f"I lost this!", key = item_id, use_container_width=True):
-        claim(item_id, location)
+        claim(item_id["$oid"], location)
 
 if __name__ == "__main__":
     main()

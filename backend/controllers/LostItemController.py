@@ -15,13 +15,16 @@ class LostItem(BaseModel):
     time_found: str
     is_claimed: bool
 
+def id_generator(self, size=32, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
 router = APIRouter()
 
 @router.post("/lostitem/add")
 async def say_hello(timeFound: str = Form(...), latitude: float =  Form(...), longitude: float =  Form(...), image: UploadFile = File(...)):
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
-
+    image.filename = id_generator() + '.' + ".jpg"
     url = await upload_service.upload_image(image)
     #TODO: add call to model to give it a description
     description = ""

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form, File, UploadFile
 from pydantic import BaseModel
 from models import MongoClient
-from . import ImageController
+from service import ImageUploadService
 from bson import ObjectId
 from bson.json_util import dumps
 
@@ -27,7 +27,7 @@ async def say_hello(timeFound: str = Form(...), latitude: float =  Form(...), lo
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
 
-    url = await ImageController.upload_image(image)
+    url = await ImageUploadService.upload_image(image)
     #TODO: add call to model to give it a description
     description = ""
 

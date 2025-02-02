@@ -59,7 +59,7 @@ def main():
         img_bytes = io.BytesIO()
         img_pil.save(img_bytes, format="JPEG")
         img_bytes.seek(0)
-        files = {"file": img_bytes.getvalue()}
+        files = {"image": img_bytes.getvalue()}
 
         address_to_use = address_input_1 or default_location_1
         geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address_to_use}&key={google_api_key}"

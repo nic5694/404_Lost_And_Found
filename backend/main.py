@@ -1,3 +1,4 @@
+from backend.service import ImageAnalyzerService, ImageUploadService
 from controllers import LostItemController, LookingForItemController
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from PIL import Image
@@ -7,12 +8,16 @@ from similarity_model import ImageDetector
 import io
 from pymongo import MongoClient
 import gridfs
+from dotenv import load_dotenv
 
+load_dotenv()
 app = FastAPI()
 
 # Resnet50 for image similarity
 model = ImageDetector("resnet50", weights="DEFAULT")
 model.update_missing_embeddings()
+image_upload_service = ImageUploadService()
+image_analyzer_service = ImageAnalyzerService()
 
 # YOLOv8 model for object detection
 yolo_model = YOLO("yolov8n.pt")  # Load a pre-trained YOLOv8 model

@@ -2,7 +2,7 @@ streamlit
 streamlit-option-menu
 pillow
 opencv-python-headless==4.8.0.76
-numpy
+numpy<2
 requests
 datetime
 folium

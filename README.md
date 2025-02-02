@@ -73,6 +73,7 @@ VISION_ENDPOINT="your_vision_endpoint"
 resource_group_location = "Canada Central"
 resource_group_name_prefix = "rg"
 subscription_id = "your_subscription_id"
+action_members_emails = ["email1@example.com", "email2@example.com", "email3@example.com"]
 ```
 ### Running the project
 - To run the backend you navigate to the `backend` directory where their is the `docker-compose.yml` file and run the following command 

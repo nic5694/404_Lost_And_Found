@@ -18,6 +18,10 @@ router = APIRouter()
 
 @router.post("/lostitem/add")
 async def say_hello(timeFound: str, latitude: float, longitude: float, image: UploadFile = File(...),):
+    print(timeFound)
+    print(latitude)
+    print(longitude)
+    print(image)
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
 

@@ -51,13 +51,6 @@ async def process_image(file: UploadFile = File(...)):
         "image_id_map": json.dumps(image_id_map),
     }
 
-@app.post("/similar_description")
-async def similar_description(description: str = Form(...)):
-    
-    similar_images = model.similar_images_description(description, n=5)
-
-    return {"similar_images" :json.dumps(similar_images)}
-
 @app.post("/upload")
 async def upload_to_db(file: UploadFile = File(...)):
     if file.filename == "":

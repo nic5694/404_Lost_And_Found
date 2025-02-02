@@ -225,17 +225,10 @@ def main():
                 "description": description,
             }
 
-            response = requests.post(f"{BACKEND_URL}/similar_description", data=data)
-            print(response)
-
-            parsed_response = response.json()
-            similar_images = json.loads(parsed_response["similar_images"])
-
             # Fetch all items from the database
             items_response = requests.get(BACKEND_URL + "/lostitem/getAll")
             API_Data = items_response.json()
             list_data = json.loads(API_Data["items"])
-            
 
             # Display the similar images in a single row
             with result_placeholder.container():

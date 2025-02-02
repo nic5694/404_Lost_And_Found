@@ -5,12 +5,16 @@ import numpy as np
 import cv2
 import io
 import streamlit.components.v1 as components
+import json
 
 # Backend URL
 BACKEND_URL = (
     "https://404lostandfound-aserdfh2csb8cmfh.canadacentral-01.azurewebsites.net"
 )
 
+BACKUP_URL = (
+    "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000/"
+)
 
 def draw_boxes(image, detections):
     """
@@ -32,11 +36,19 @@ def draw_boxes(image, detections):
     return Image.fromarray(image)  # Convert back to PIL image
 
 
+def log_to_console(message: str) -> None:
+    js_code = f"""
+<script>
+    console.log({json.dumps(message)});
+</script>
+"""
+    components.html(js_code)
+
 def main():
     st.image("./assets/logo.png", width=400)
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Search your item", "Real-Time Detection"])
+    tab1, tab2 = st.tabs(["Use a picture", "Use Real-Time Detection"])
 
     with tab1:
         col1, col2 = st.columns(2)
@@ -65,7 +77,8 @@ def main():
             img_pil.save(img_bytes, format="JPEG")
             img_bytes.seek(0)
             files = {"file": img_bytes.getvalue()}
-            response = requests.post(f"{BACKEND_URL}/detect_objects", files=files)
+            #TODO: change to real URL
+            response = requests.post(f"{BACKUP_URL}/detect_objects", files=files)
             detections = response.json()
 
             # Draw bounding boxes on the image
@@ -77,7 +90,8 @@ def main():
             )
 
             # Send image to backend for similarity search
-            response = requests.post(f"{BACKEND_URL}/process_image", files=files)
+            #TODO: change to real URL
+            response = requests.post(f"{BACKUP_URL}/process_image", files=files)
             try:
                 similar_images = response.json()
             except requests.exceptions.JSONDecodeError:
@@ -99,11 +113,14 @@ def main():
                     caption=f"Similarity: {similarity:.2f}",
                     use_container_width=True,
                 )
+                # if st.button(f"I lost this!", key = item_id, use_container_width=True):
+                #     claim(item_id["$oid"], location)
 
             st.write("Couldn't find your image here?")
             # Button to push the image to the database
             if st.button("Declare Lost Item"):
-                response = requests.post(f"{BACKEND_URL}/upload", files=files)
+                #TODO: change to real URL
+                response = requests.post(f"{BACKUP_URL}/upload", files=files)
                 if response.status_code == 200:
                     st.success("Image successfully pushed to the database")
                 else:
@@ -140,7 +157,8 @@ def main():
             img_pil.save(img_bytes, format="JPEG")
             img_bytes.seek(0)
             files = {"file": img_bytes.getvalue()}
-            response = requests.post(f"{BACKEND_URL}/detect_objects", files=files)
+            #TODO: change to real URL
+            response = requests.post(f"{BACKUP_URL}/detect_objects", files=files)
             detections = response.json()
 
             # Draw bounding boxes on the image
@@ -152,7 +170,8 @@ def main():
             )
 
             # Send image to backend for similarity search
-            response = requests.post(f"{BACKEND_URL}/process_image", files=files)
+            #TODO: change to real URL
+            response = requests.post(f"{BACKUP_URL}/process_image", files=files)
             try:
                 similar_images = response.json()
             except requests.exceptions.JSONDecodeError:

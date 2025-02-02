@@ -13,6 +13,8 @@ from kmeans_pytorch import kmeans
 from PIL import Image
 import random
 from bson.decimal128 import Decimal128
+from openai import OpenAI
+
 
 
 class ImageDetector:
@@ -235,6 +237,54 @@ class ImageDetector:
 
         return sim_dict, image_id_map
 
+    def is_float(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
+    def similar_images_description(self, target_description, n=None):
+
+        client = OpenAI()
+        
+        # iteratively store similarity of stored images to target image
+        images_with_similarity = []
+        tries = 0
+        for record in self.collection.find({}):
+            score = "a"
+            tries = 0
+            while not self.is_float(score) and score > 1.0 and score < 0.0:
+                tries += 1
+                if tries > 5:
+                    record["similarity"] = 0.0
+                    break
+                completion = client.chat.completions.create(
+                model="gpt-4o-mini",
+                store=False,
+                messages=[
+                    {"role": "user", "content": f"give me a similarity score between the following two descriptions: \"{target_description}\" and \"{record['description']}\" between 1 and 0.00, where 1 is the exact same and 0 is nothing at all alike. only return a number"},
+                ]
+                )
+                try:
+                    score = float(completion.choices[0].message.content)
+                except:
+                    score = "a"
+            
+            if score != "a":
+                record["similarity"] = score
+            
+            images_with_similarity.append(record)
+
+        #sort based on decreasing similarity
+        images_with_similarity = sorted(images_with_similarity, key=lambda i: i["similarity"], reverse=True)
+
+        # cut to defined top n similar images
+        if n is not None:
+            images_with_similarity = images_with_similarity[:int(n)]
+
+        return images_with_similarity
+
     def output_images(self, similar, target_image_url):
         self.display_img(target_image_url, "original")
 
@@ -258,7 +308,6 @@ class ImageDetector:
         return
 
 
-# if __name__ == "__main__":
-#     model = ImageDetector("resnet50", weights="DEFAULT")
-#     model.update_missing_embeddings()
-#     similar_images = model.similar_images(target_image_url="/assets/logo.png", n=1)
+if __name__ == "__main__":
+    model = ImageDetector("resnet50")
+    print(model.similar_images_description("a red apple", 5))

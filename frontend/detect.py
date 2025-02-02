@@ -216,7 +216,7 @@ def main():
         )
         description = st.text_area("Enter a description of the item")
 
-        if st.button("Upload Lost Item"):
+        if st.button("Search Lost Item"):
             # Parse the location into a list of floats
             lat, lon = map(float, location.split(","))
             location_list = [lat, lon]
@@ -226,12 +226,7 @@ def main():
                 description: description,
             }
 
-            # Upload the lost item
-            response = requests.post(f"{BACKEND_URL}/lostitem/add", data=data)
-            if response.status_code == 200:
-                st.write("Item reported successfully!")
-            else:
-                st.error("Failed to report item")
+            
 
     with tab3:
         # OpenCV webcam capture
@@ -280,7 +275,19 @@ def main():
             # TODO: change to real URL
             response = requests.post(f"{BACKUP_URL}/process_image", files=files)
             try:
-                similar_images = response.json()
+                parsed_response = response.json()
+                similar_images = json.loads(parsed_response["similar_images"])
+
+                # Fetch all items from the database
+                items_response = requests.get(BACKEND_URL + "/lostitem/getAll")
+                API_Data = items_response.json()
+                list_data = json.loads(API_Data["items"])
+                good_list = []
+
+                for item in similar_images.items():
+                    object = get_item_by_field(list_data, item[0])
+                    if object is not None:
+                        good_list.append(object)
             except requests.exceptions.JSONDecodeError:
                 st.error("Failed to decode JSON response")
                 return
@@ -290,6 +297,11 @@ def main():
                 st.write("Similar Images:")
                 cols = st.columns(len(similar_images))  # Create columns for each image
                 for (img_url, similarity), col in zip(similar_images.items(), cols):
+                    
+                    object = get_item_by_field(list_data, img_url)
+                    if object["is_claimed"]:
+                        continue
+                    
                     # Fetch the image from the URL
                     img_response = requests.get(img_url)
                     img = Image.open(io.BytesIO(img_response.content)).resize(
@@ -300,6 +312,10 @@ def main():
                         caption=f"Similarity: {similarity:.2f}",
                         use_container_width=True,
                     )
+                    if col.button(
+                        f"A match is found!", key=object["_id"], use_container_width=True
+                    ):
+                        claim(object["_id"], object["location"])
 
         # Release the webcam when inference is stopped
         cap.release()

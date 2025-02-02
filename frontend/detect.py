@@ -90,7 +90,7 @@ def get_item_by_field(list_data, value):
 
 
 def claim(item_id, location):
-    response = requests.put(BACKEND_URL + "/lostitem/claim/" + item_id)
+    response = requests.put(BACKEND_URL + "/lostitem/claim/" + item_id["$oid"])
     if response.status_code == 200:
         st.success("Item claimed!")
     else:

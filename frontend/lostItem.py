@@ -2,7 +2,9 @@ import datetime
 import requests
 import streamlit as st
 from PIL import Image
+import json
 import io
+import streamlit.components.v1 as components
 
 # Backend URL
 BACKEND_URL = (
@@ -16,6 +18,14 @@ BACKUP_URL = (
 
 # Set default location
 default_location_1 = "concordia university, montreal"
+
+def log_to_console(message: str) -> None:
+    js_code = f"""
+<script>
+    console.log({json.dumps(message)});
+</script>
+"""
+    components.html(js_code)
 
 def main():
     google_api_key = "AIzaSyB9C-2uZFowdBBylfeK5XxDw1IHOKBvzOY"
@@ -63,8 +73,12 @@ def main():
             lng = data["results"][0]["geometry"]["location"]["lng"]
 
         if lat is not None and lng is not None:
+            data={
+                "longitude":lng, 
+                "latitude":lat, 
+                "timeFound":str(datetime.datetime.now())}
             # Send image to backend
-            response = requests.post(f"{BACKEND_URL}/lostitem/add", files=files, data={"longitude":lng, "latitude":lat, "timeFound":str(datetime.datetime.now())})
+            response = requests.post(f"{BACKEND_URL}/lostitem/add", files=files, data=data)
             st.write("Item reported successfully!")
         else:
             st.warning("Need address to add item!")

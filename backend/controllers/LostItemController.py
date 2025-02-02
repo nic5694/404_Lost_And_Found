@@ -17,7 +17,7 @@ class LostItem(BaseModel):
 router = APIRouter()
 
 @router.post("/lostitem/add")
-async def say_hello(timeFound: str = Form(...), location: str = Form(...), image: UploadFile = File(...),):
+async def say_hello(timeFound: str, latitude: float, longitude: float, image: UploadFile = File(...),):
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
 
@@ -25,7 +25,7 @@ async def say_hello(timeFound: str = Form(...), location: str = Form(...), image
     #TODO: add call to model to give it a description
     description = ""
 
-    entry = {"timeFound": timeFound, "location": location, "image_url": url, "description": description, "is_claimed": False}
+    entry = {"timeFound": timeFound, "location": [latitude,longitude], "image_url": url, "description": description, "is_claimed": False}
 
     x = mycol.insert_one(entry)
     

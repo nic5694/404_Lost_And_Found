@@ -1,6 +1,6 @@
 # 404 Lost & Found
-
-ConUHacks
+Ever lost something precious and wished you had a digital detective on your side? Meet 404 Lost&Found – your AI-powered personal item finder and data visualization tool
+- ConUHacks 2025
 
 ## How to run the project
 

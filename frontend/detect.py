@@ -46,8 +46,8 @@ def display_map():
     address_input_2 = st.text_input("Enter the second Address:", key="address_input_2", value=st.session_state["address_2"])
 
     # Set default locations
-    default_location_1 = "" 
-    default_location_2 = "" 
+    default_location_1 = "concordia university, montreal" 
+    default_location_2 = "john abbott college, montreal" 
     
     # Create a Google Map iframe to show both addresses and directions
     map_html = f'''
@@ -84,7 +84,7 @@ def main():
     st.image("./assets/logo.png", width=400)
 
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Search your item", "Real-Time Detection", "map"])
+    tab1, tab2 = st.tabs(["Search your item", "Real-Time Detection"])
 
     with tab1:
         col1, col2 = st.columns(2)
@@ -157,9 +157,6 @@ def main():
                 else:
                     st.error("Failed to push image to the database")
 
-        # Display the Google Map
-        display_map()
-
     with tab2:
         # OpenCV webcam capture
         cap = cv2.VideoCapture(1)
@@ -228,10 +225,6 @@ def main():
 
         # Release the webcam when inference is stopped
         cap.release()
-
-    with tab3:
-        display_map()
-
 
 if __name__ == "__main__":
     main()

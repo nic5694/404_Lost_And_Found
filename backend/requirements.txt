@@ -13,3 +13,5 @@ pillow
 kmeans-pytorch
 python-multipart
 pymongo
+flask
+azure-ai-vision-imageanalysis

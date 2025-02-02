@@ -17,15 +17,13 @@ def fetch_locations_from_api():
         response = requests.get(BACKEND_URL + "/get_locations")
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()
-        print(data)
         return data
     except requests.exceptions.RequestException as e:
         st.error(f"Failed to fetch locations from the API: {e}")
         return []
 
-
 def main():
-    st.title("Browse Object Locations")
+    st.title("Browse Objects")
 
     # Fetch locations from the API
     locations = fetch_locations_from_api()

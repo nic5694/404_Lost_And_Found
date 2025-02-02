@@ -228,6 +228,41 @@ def main():
             response = requests.post(f"{BACKEND_URL}/similar_description", data=data)
             print(response)
 
+            parsed_response = response.json()
+            similar_images = json.loads(parsed_response["similar_images"])
+
+            # Fetch all items from the database
+            items_response = requests.get(BACKEND_URL + "/lostitem/getAll")
+            API_Data = items_response.json()
+            list_data = json.loads(API_Data["items"])
+            
+
+            # Display the similar images in a single row
+            with result_placeholder.container():
+                st.write("Similar Images:")
+                cols = st.columns(len(similar_images))  # Create columns for each image
+                for (img_url, similarity), col in zip(similar_images.items(), cols):
+                    
+                    object = get_item_by_field(list_data, img_url)
+                    if object["is_claimed"]:
+                        continue
+                    
+                    # Fetch the image from the URL
+                    img_response = requests.get(img_url)
+                    img = Image.open(io.BytesIO(img_response.content)).resize(
+                        (150, 150)
+                    )  # Resize the image
+                    col.image(
+                        img,
+                        caption=f"Similarity: {similarity:.2f}",
+                        use_container_width=True,
+                    )
+                    if col.button(
+                        f"A match is found!", key=object["_id"], use_container_width=True
+                    ):
+                        claim(object["_id"], object["location"])
+
+
     with tab3:
         # OpenCV webcam capture
         cap = cv2.VideoCapture(1)

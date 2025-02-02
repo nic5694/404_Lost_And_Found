@@ -254,7 +254,7 @@ class ImageDetector:
         for record in self.collection.find({}):
             score = "a"
             tries = 0
-            while not self.is_float(score) and score > 1.0 and score < 0.0:
+            while score > 1.0 and score < 0.0:
                 tries += 1
                 if tries > 5:
                     record["similarity"] = 0.0

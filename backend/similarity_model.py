@@ -11,6 +11,8 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 from kmeans_pytorch import kmeans
 from PIL import Image
+import random
+from bson.decimal128 import Decimal128
 
 
 class ImageDetector:
@@ -162,6 +164,31 @@ class ImageDetector:
                 print(f"Skipping due to error: {image_url}")
 
         return
+
+    def fetch_locations(self):
+        """
+        Fetch all locations and their corresponding image URLs from the MongoDB collection.
+        """
+        locations = []
+
+        cursor = self.collection.find(
+            {}, {"location": 1, "image_url": 1}
+        )  # Fetch location and image_url fields
+        for document in cursor:
+            if (
+                "location" in document
+                and isinstance(document["location"], list)
+                and len(document["location"]) == 2
+            ):
+                lat, lon = document["location"]
+                if isinstance(lat, Decimal128):
+                    lat = float(lat.to_decimal())
+                if isinstance(lon, Decimal128):
+                    lon = float(lon.to_decimal())
+                image_url = document.get("image_url", "")
+                locations.append([lat, lon, image_url])
+
+        return locations
 
     def similar_images(self, target_image_url, n=None):
         """

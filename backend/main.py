@@ -25,6 +25,15 @@ yolo_model = YOLO("yolov8n.pt")  # Load a pre-trained YOLOv8 model
 app.include_router(LostItemController.router)
 app.include_router(LookingForItemController.router)
 
+
+@app.get("/get_locations")
+async def get_locations():
+    """
+    Fetch all locations from the MongoDB collection.
+    """
+    return model.fetch_locations()
+
+
 @app.post("/process_image")
 async def process_image(file: UploadFile = File(...)):
     if file.filename == "":
@@ -76,9 +85,11 @@ async def detect_objects(file: UploadFile = File(...)):
 
     return detections
 
+
 @app.get("/healthcheck")
 async def healthcheck():
     return {"status": "ok"}
+
 
 if __name__ == "__main__":
     import uvicorn

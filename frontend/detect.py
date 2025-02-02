@@ -7,6 +7,7 @@ import io
 import streamlit.components.v1 as components
 import json
 import os
+import datetime
 
 # Backend URL
 BACKEND_URL = (
@@ -14,9 +15,8 @@ BACKEND_URL = (
     "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000"
 )
 
-BACKUP_URL = (
-    "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000/"
-)
+BACKUP_URL = "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000/"
+
 
 def draw_boxes(image, detections):
     """
@@ -38,14 +38,6 @@ def draw_boxes(image, detections):
     return Image.fromarray(image)  # Convert back to PIL image
 
 
-def log_to_console(message: str) -> None:
-    js_code = f"""
-<script>
-    console.log({json.dumps(message)});
-</script>
-"""
-    components.html(js_code)
-
 def get_item_by_field(list_data, value):
     """
     Returns the first item in the list `list_data` where the `field` matches the given `value`.
@@ -55,26 +47,38 @@ def get_item_by_field(list_data, value):
         if item.get("image_url") == value:
             return item
 
-def claim(item_id, location):
-    #TODO: cahnge back to real URL
-    response = requests.put(BACKUP_URL + "/lostitem/claim/" + item_id)
 
+def claim(item_id, location):
+    response = requests.put(BACKEND_URL + "/lostitem/claim/" + item_id)
     if response.status_code == 200:
-        #TODO: route to map directions page and put location from directions
         st.success("Item claimed!")
     else:
         st.error("Failed to claim item")
 
+
+def upload_lost_item(files, location, description):
+    """
+    Upload the lost item to the database.
+    """
+    data = {
+        "location": location,
+        "timeFound": str(datetime.datetime.now()),
+        "description": description,
+    }
+    response = requests.post(f"{BACKEND_URL}/lostitem/add", files=files, data=data)
+    return response
+
+
 def main():
-    # st.image("./assets/logo.png", width=400)
+    # Display the logo
     base_path = os.path.dirname(os.path.abspath(__file__))
     logo_path = os.path.join(base_path, "assets", "logo.png")
-
     st.image(logo_path, width=400)
 
-
     # Create tabs
-    tab1, tab2 = st.tabs(["Use a picture", "Use Real-Time Detection"])
+    tab1, tab2, tab3 = st.tabs(
+        ["Use a picture", "Use text description", "Use Real-Time Detection"]
+    )
 
     with tab1:
         col1, col2 = st.columns(2)
@@ -103,8 +107,7 @@ def main():
             img_pil.save(img_bytes, format="JPEG")
             img_bytes.seek(0)
             files = {"file": img_bytes.getvalue()}
-            #TODO: change to real URL
-            response = requests.post(f"{BACKUP_URL}/detect_objects", files=files)
+            response = requests.post(f"{BACKEND_URL}/detect_objects", files=files)
             detections = response.json()
 
             # Draw bounding boxes on the image
@@ -116,20 +119,18 @@ def main():
             )
 
             # Send image to backend for similarity search
-            #TODO: change to real URL
-            response = requests.post(f"{BACKUP_URL}/process_image", files=files)
+            response = requests.post(f"{BACKEND_URL}/process_image", files=files)
             try:
                 parsed_response = response.json()
                 similar_images = json.loads(parsed_response["similar_images"])
-                
-                #absolute vomit code, but eh it works
-                items_response = requests.get(BACKUP_URL + "/lostitem/getAll")
 
+                # Fetch all items from the database
+                items_response = requests.get(BACKEND_URL + "/lostitem/getAll")
                 API_Data = items_response.json()
-                list_data  = json.loads(API_Data["items"])
+                list_data = json.loads(API_Data["items"])
                 good_list = []
 
-                for item  in similar_images.items():
+                for item in similar_images.items():
                     object = get_item_by_field(list_data, item[0])
                     if object is not None:
                         good_list.append(object)
@@ -143,9 +144,8 @@ def main():
             st.write("Similar Images:")
             cols = st.columns(len(similar_images))  # Create columns for each image
             for (img_url, similarity), col in zip(similar_images.items(), cols):
-                
-                object = get_item_by_field(list_data, img_url) 
-                if object["is_claimed"]:    
+                object = get_item_by_field(list_data, img_url)
+                if object["is_claimed"]:
                     continue
                 # Fetch the image from the URL
                 img_response = requests.get(img_url)
@@ -157,20 +157,66 @@ def main():
                     caption=f"Similarity: {similarity:.2f}",
                     use_container_width=True,
                 )
-                if col.button(f"I lost this!", key = object["_id"], use_container_width=True):
+                if col.button(
+                    f"A match is found!", key=object["_id"], use_container_width=True
+                ):
                     claim(object["_id"], object["location"])
 
             st.write("Couldn't find your image here?")
-            # Button to push the image to the database
+            # Button to open the popup for uploading the lost item
             if st.button("Declare Lost Item"):
-                #TODO: change to real URL
-                response = requests.post(f"{BACKUP_URL}/upload", files=files)
-                if response.status_code == 200:
-                    st.success("Image successfully pushed to the database")
-                else:
-                    st.error("Failed to push image to the database")
+                with st.form("upload_lost_item_form"):
+                    st.write("Upload Lost Item")
+                    # Allow the user to input location and description
+                    location = st.text_input(
+                        "Location (latitude, longitude)", value="45.4954, 73.5791"
+                    )
+                    description = st.text_area(
+                        "Description", value="Sample description"
+                    )
 
+                    # Submit button
+                    if st.form_submit_button("Upload"):
+                        try:
+                            # Parse the location into a list of floats
+                            lat, lon = map(float, location.split(","))
+                            location_list = [lat, lon]
+
+                            # Upload the lost item
+                            response = upload_lost_item(
+                                files, location_list, description
+                            )
+                            if response.status_code == 200:
+                                st.write("Item reported successfully!")
+                            else:
+                                st.error("Failed to report item")
+                        except Exception as e:
+                            st.error(f"Failed to upload item: {e}")
     with tab2:
+        # Text input for description
+        location = st.text_input(
+            "Location (latitude, longitude)", value="45.4954, 73.5791"
+        )
+        description = st.text_area("Enter a description of the item")
+
+        if st.button("Upload Lost Item"):
+            # Parse the location into a list of floats
+            lat, lon = map(float, location.split(","))
+            location_list = [lat, lon]
+
+            data = {
+                location: location_list,
+                description: description,
+            }
+
+            # Upload the lost item
+            response = requests.post(f"{BACKEND_URL}/lostitem/add", data=data)
+            if response.status_code == 200:
+                st.write("Item reported successfully!")
+            else:
+                st.error("Failed to report item")
+
+    with tab3:
         # OpenCV webcam capture
         cap = cv2.VideoCapture(1)
 
@@ -201,7 +247,7 @@ def main():
             img_pil.save(img_bytes, format="JPEG")
             img_bytes.seek(0)
             files = {"file": img_bytes.getvalue()}
-            #TODO: change to real URL
+            # TODO: change to real URL
             response = requests.post(f"{BACKUP_URL}/detect_objects", files=files)
             detections = response.json()
 
@@ -214,7 +260,7 @@ def main():
             )
 
             # Send image to backend for similarity search
-            #TODO: change to real URL
+            # TODO: change to real URL
             response = requests.post(f"{BACKUP_URL}/process_image", files=files)
             try:
                 similar_images = response.json()

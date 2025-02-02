@@ -16,3 +16,4 @@ kmeans-pytorch
 fastapi
 python-multipart
 flask
+azure-ai-vision-imageanalysis

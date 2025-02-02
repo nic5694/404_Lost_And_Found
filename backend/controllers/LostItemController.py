@@ -4,6 +4,8 @@ from models import MongoClient
 from service import ImageUploadService
 from bson import ObjectId
 from bson.json_util import dumps
+import random
+import string
 
 client = MongoClient.client
 upload_service = ImageUploadService.ImageUploadService()

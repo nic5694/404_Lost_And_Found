@@ -1,3 +1,4 @@
+from backend.service import ImageAnalyzerService, ImageUploadService
 from controllers import LostItemController, LookingForItemController
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from PIL import Image
@@ -7,18 +8,31 @@ from similarity_model import ImageDetector
 import io
 from pymongo import MongoClient
 import gridfs
+from dotenv import load_dotenv
 
+load_dotenv()
 app = FastAPI()
 
 # Resnet50 for image similarity
 model = ImageDetector("resnet50", weights="DEFAULT")
 model.update_missing_embeddings()
+image_upload_service = ImageUploadService()
+image_analyzer_service = ImageAnalyzerService()
 
 # YOLOv8 model for object detection
 yolo_model = YOLO("yolov8n.pt")  # Load a pre-trained YOLOv8 model
 
 app.include_router(LostItemController.router)
 app.include_router(LookingForItemController.router)
+
+
+@app.get("/get_locations")
+async def get_locations():
+    """
+    Fetch all locations from the MongoDB collection.
+    """
+    return model.fetch_locations()
+
 
 @app.post("/process_image")
 async def process_image(file: UploadFile = File(...)):
@@ -71,9 +85,11 @@ async def detect_objects(file: UploadFile = File(...)):
 
     return detections
 
+
 @app.get("/healthcheck")
 async def healthcheck():
     return {"status": "ok"}
+
 
 if __name__ == "__main__":
     import uvicorn

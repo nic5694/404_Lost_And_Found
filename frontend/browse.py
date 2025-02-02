@@ -3,7 +3,9 @@ import requests
 import json
 from datetime import datetime
 from dateutil import parser
-
+import pandas as pd
+import folium
+from streamlit_folium import st_folium
 
 BACKEND_URL = (
     "https://404lostandfound-aserdfh2csb8cmfh.canadacentral-01.azurewebsites.net"
@@ -75,15 +77,16 @@ def main():
                 card(item["image_url"], item["description"], item["timeFound"], item["_id"])
 
 def claim(item_id):
+    #TODO: once server is up see if call does what it is supposed to
     response = requests.post(BACKEND_URL + "/lostitem/claim/" + item_id)
 
     if response.status_code == 200:
+        #TODO: route to map directions page and put location from directions
         st.success("Item claimed!")
     else:
         st.error("Failed to claim item")
 
 def card(image_url, description, time_found, item_id):
-
     time_found_date = parser.parse(time_found)
     days_ago = (datetime.utcnow() - time_found_date).days
 
@@ -96,3 +99,48 @@ def card(image_url, description, time_found, item_id):
     ''')
     if st.button(f"I lost this!", key = item_id, use_container_width=True):
         claim(item_id)
+
+def fetch_locations_from_api():
+    """
+    Fetch locations from the FastAPI endpoint.
+    """
+    try:
+        response = requests.get(BACKEND_URL + "/get_locations")
+        response.raise_for_status()  # Raise an error for bad status codes
+        data = response.json()
+        return data
+    except requests.exceptions.RequestException as e:
+        st.error(f"Failed to fetch locations from the API: {e}")
+        return []
+
+def main():
+    st.title("Browse Objects")
+
+    # Fetch locations from the API
+    locations = fetch_locations_from_api()
+
+    if not locations:
+        st.warning("No locations found in the database.")
+        return
+
+    # Convert the list of locations to a DataFrame
+    df = pd.DataFrame(locations, columns=["lat", "lon", "image_url"])
+
+    # Create a folium map
+    m = folium.Map(location=[45.5019, 73.5674], zoom_start=1)
+
+    # Add points to the map
+    for _, row in df.iterrows():
+        folium.Marker(
+            location=[row["lat"], row["lon"]],
+            popup=folium.Popup(
+                f'<img src="{row["image_url"]}" width="150" height="150">',
+                max_width=250,
+            ),
+        ).add_to(m)
+
+    # Display the map using st_folium
+    st_folium(m, width=700, height=500)
+
+if __name__ == "__main__":
+    main()

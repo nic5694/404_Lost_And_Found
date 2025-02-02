@@ -2,8 +2,6 @@ fastapi
 python-dotenv
 azure-storage-blob
 uvicorn
-motor
-streamlit
 numpy
 torch
 torchvision
@@ -13,6 +11,7 @@ pandas
 opencv-python
 pillow
 kmeans-pytorch
-fastapi
 python-multipart
+pymongo
 flask
+azure-ai-vision-imageanalysis

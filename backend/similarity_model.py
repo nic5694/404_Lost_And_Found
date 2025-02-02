@@ -234,7 +234,7 @@ class ImageDetector:
 
         self.output_images(sim_dict, target_image_url)
 
-        return {"simdict": sim_dict, "image_id_map": image_id_map}
+        return sim_dict, image_id_map
 
     def output_images(self, similar, target_image_url):
         self.display_img(target_image_url, "original")

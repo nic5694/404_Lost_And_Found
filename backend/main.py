@@ -42,9 +42,9 @@ async def process_image(file: UploadFile = File(...)):
 
     img = Image.open(io.BytesIO(await file.read()))
     img.save("temp.jpg")
-    similar_images = model.similar_images("temp.jpg", n=5)
+    similar_images, image_id_map = model.similar_images("temp.jpg", n=5)
 
-    return similar_images
+    return {"similar_images": similar_images, "image_id_map": image_id_map}
 
 
 @app.post("/upload")

@@ -222,8 +222,7 @@ def main():
             location_list = [lat, lon]
 
             data = {
-                location: location_list,
-                description: description,
+                "description": description,
             }
 
             

@@ -222,7 +222,7 @@ class ImageDetector:
             sim = cosine(vector, target_vector)[0].item()
             sim_dict[file_path] = sim
             print(record["_id"])
-            image_id_map[record["_id"]["$oid"]] = file_path
+            image_id_map[record["_id"]] = file_path
 
         # sort based on decreasing similarity
         items = sim_dict.items()

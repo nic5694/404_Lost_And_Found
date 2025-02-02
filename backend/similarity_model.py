@@ -275,7 +275,8 @@ class ImageDetector:
                 record["similarity"] = score
             
             images_with_similarity.append(record)
-
+        
+        print(images_with_similarity)
         #sort based on decreasing similarity
         images_with_similarity = sorted(images_with_similarity, key=lambda i: i["similarity"], reverse=True)
 

@@ -221,7 +221,7 @@ class ImageDetector:
             vector = torch.tensor(record["embedding"]).to(self.device)
             sim = cosine(vector, target_vector)[0].item()
             sim_dict[file_path] = sim
-            image_id_map[str(record["_id"])] = file_path
+            image_id_map[record["$oid"]] = file_path
 
         # sort based on decreasing similarity
         items = sim_dict.items()

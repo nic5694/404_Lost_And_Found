@@ -13,6 +13,7 @@ class ImageUploadService:
 
     async def upload_image(self, image: UploadFile) -> str:
         filename = image.filename
+        print(filename)
         file_extension = filename.rsplit('.', 1)[1]
         random_name = id_generator() + '.' + file_extension
         blob_client = self.container_blob.get_blob_client(random_name)

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Form, File, UploadFile
 from pydantic import BaseModel
 from models import MongoClient
-from . import ImageController
+from service import ImageUploadService
 from bson import ObjectId
 from bson.json_util import dumps
 
 client = MongoClient.client
+upload_service = ImageUploadService.ImageUploadService()
 
 class LostItem(BaseModel):
     image_url: str 
@@ -17,15 +18,15 @@ class LostItem(BaseModel):
 router = APIRouter()
 
 @router.post("/lostitem/add")
-async def say_hello(timeFound: str = Form(...), location: str = Form(...), image: UploadFile = File(...),):
+async def say_hello(timeFound: str = Form(...), latitude: float =  Form(...), longitude: float =  Form(...), image: UploadFile = File(...)):
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
 
-    url = await ImageController.upload_image(image)
+    url = await upload_service.upload_image(image)
     #TODO: add call to model to give it a description
     description = ""
 
-    entry = {"timeFound": timeFound, "location": location, "image_url": url, "description": description, "is_claimed": False}
+    entry = {"timeFound": timeFound, "location": [latitude,longitude], "image_url": url, "description": description, "is_claimed": False}
 
     x = mycol.insert_one(entry)
     

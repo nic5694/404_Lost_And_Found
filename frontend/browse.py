@@ -16,57 +16,6 @@ BACKUP_URL = (
     "http://d404lostandfound.canadacentral.cloudapp.azure.com:8000/"
 )
 
-items = [
-    {
-        "_id": "679e9480486c93cc13b82d11",
-        "timeFound": "2025-02-01 12:34:56",
-        "location": ["location1", "location2"],
-        "image_url": "https://404lostandfoundacccount.blob.core.windows.net/lostitemcontainer/lostitemcontainer/0ERI9D111CWYIKZKASEUV34RF5HPZUXE.JPG?st=2025-02-01T20%3A04%3A20Z&se=2025-05-24T03%3A04%3A20Z&si=api_container_access&spr=https&sv=2022-11-02&sr=c&sig=cGzA4uiM9VVCmwzCzapSbnQiKBcVFuv%2BVJYcMlo4OW4%3D",
-        "description": "",
-        "is_claimed": False
-    },
-    {
-        "_id": "679e954855bef841d81cf907",
-        "timeFound": "2025-02-01 12:34:56",
-        "location": ["location1", "location2"],
-        "image_url": "https://404lostandfoundacccount.blob.core.windows.net/lostitemcontainer/lostitemcontainer/USTRVHK3WN8S42EYJLDJJ10LTTAGOETA.JPG?st=2025-02-01T20%3A04%3A20Z&se=2025-05-24T03%3A04%3A20Z&si=api_container_access&spr=https&sv=2022-11-02&sr=c&sig=cGzA4uiM9VVCmwzCzapSbnQiKBcVFuv%2BVJYcMlo4OW4%3D",
-        "description": "",
-        "is_claimed": False
-    },
-    {
-        "_id": "679e955d55bef841d81cf908",
-        "timeFound": "2025-02-01 12:34:56",
-        "location": ["location1", "location2"],
-        "image_url": "https://404lostandfoundacccount.blob.core.windows.net/lostitemcontainer/lostitemcontainer/EVEE35P2OWQRRRPDG7SB30B3XOQ1YFH0.JPG?st=2025-02-01T20%3A04%3A20Z&se=2025-05-24T03%3A04%3A20Z&si=api_container_access&spr=https&sv=2022-11-02&sr=c&sig=cGzA4uiM9VVCmwzCzapSbnQiKBcVFuv%2BVJYcMlo4OW4%3D",
-        "description": "",
-        "is_claimed": False
-    },
-    {
-        "_id": "679e957655bef841d81cf909",
-        "timeFound": "2025-02-01 12:34:56",
-        "location": ["location1", "location2"],
-        "image_url": "https://404lostandfoundacccount.blob.core.windows.net/lostitemcontainer/lostitemcontainer/VE6P1T64P7WXR800E76L98GRDOFYGL4P.JPG?st=2025-02-01T20%3A04%3A20Z&se=2025-05-24T03%3A04%3A20Z&si=api_container_access&spr=https&sv=2022-11-02&sr=c&sig=cGzA4uiM9VVCmwzCzapSbnQiKBcVFuv%2BVJYcMlo4OW4%3D",
-        "description": "",
-        "is_claimed": False
-    },
-    {
-        "_id": "679e95ac55bef841d81cf90a",
-        "timeFound": "2025-02-01 12:34:56",
-        "location": ["location1", "location2"],
-        "image_url": "https://404lostandfoundacccount.blob.core.windows.net/lostitemcontainer/lostitemcontainer/WP2C6C0R11JEAL924MSO309ABKJT7CTS.JPG?st=2025-02-01T20%3A04%3A20Z&se=2025-05-24T03%3A04%3A20Z&si=api_container_access&spr=https&sv=2022-11-02&sr=c&sig=cGzA4uiM9VVCmwzCzapSbnQiKBcVFuv%2BVJYcMlo4OW4%3D",
-        "description": "",
-        "is_claimed": False
-    },
-    {
-        "_id": "679e95d655bef841d81cf90b",
-        "timeFound": "2025-02-01 12:34:56",
-        "location": ["location1", "location2"],
-        "image_url": "https://404lostandfoundacccount.blob.core.windows.net/lostitemcontainer/lostitemcontainer/CNS0ANWDIHF4EETGHBZO72I0H772T3JL.JPG?st=2025-02-01T20%3A04%3A20Z&se=2025-05-24T03%3A04%3A20Z&si=api_container_access&spr=https&sv=2022-11-02&sr=c&sig=cGzA4uiM9VVCmwzCzapSbnQiKBcVFuv%2BVJYcMlo4OW4%3D",
-        "description": "",
-        "is_claimed": False
-    }
-]
-
 def main():
     #TODO: change to real URL
     response = requests.get(BACKUP_URL + "/lostitem/getAll")

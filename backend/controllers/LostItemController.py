@@ -17,7 +17,7 @@ class LostItem(BaseModel):
     time_found: str
     is_claimed: bool
 
-def id_generator(self, size=32, chars=string.ascii_uppercase + string.digits):
+def id_generator(size=32, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 router = APIRouter()

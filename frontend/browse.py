@@ -74,7 +74,7 @@ def main():
         if not item["is_claimed"]:
             col = cols[index % 3]  # Cycle through columns
             with col:
-                card(item["image_url"], item["description"], item["timeFound"], item["_id"])
+                card(item["image_url"], item["description"], item["timeFound"], item["_id"], item["location"])
 
 def claim(item_id):
     #TODO: once server is up see if call does what it is supposed to
@@ -86,7 +86,7 @@ def claim(item_id):
     else:
         st.error("Failed to claim item")
 
-def card(image_url, description, time_found, item_id):
+def card(image_url, description, time_found, item_id, location):
     time_found_date = parser.parse(time_found)
     days_ago = (datetime.utcnow() - time_found_date).days
 
@@ -98,7 +98,7 @@ def card(image_url, description, time_found, item_id):
     </div>
     ''')
     if st.button(f"I lost this!", key = item_id, use_container_width=True):
-        claim(item_id)
+        claim(item_id, location)
 
 def fetch_locations_from_api():
     """

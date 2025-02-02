@@ -18,7 +18,7 @@ router = APIRouter()
 
 @router.post("/lostitem/add")
 async def say_hello(timeFound: str = Form(...), latitude: float =  Form(...), longitude: float =  Form(...),
-                    #  image: UploadFile = File(...),
+                     image: UploadFile = File(...)
                     ):
     print(timeFound)
     print(latitude)

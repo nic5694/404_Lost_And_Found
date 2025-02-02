@@ -4,12 +4,12 @@ from PIL import Image
 import numpy as np
 import cv2
 import io
+import streamlit.components.v1 as components
 
 # Backend URL
 BACKEND_URL = (
     "https://404lostandfound-aserdfh2csb8cmfh.canadacentral-01.azurewebsites.net"
 )
-
 
 def draw_boxes(image, detections):
     """
@@ -30,6 +30,55 @@ def draw_boxes(image, detections):
 
     return Image.fromarray(image)  # Convert back to PIL image
 
+def display_map():
+    st.header("Google Map Direction")
+
+    google_api_key = "AIzaSyB9C-2uZFowdBBylfeK5XxDw1IHOKBvzOY"
+
+    # Store address in session state to dynamically update it
+    if "address_1" not in st.session_state:
+        st.session_state["address_1"] = ""
+    if "address_2" not in st.session_state:
+        st.session_state["address_2"] = ""
+
+    # Address input fields
+    address_input_1 = st.text_input("Enter the first Address:", key="address_input_1", value=st.session_state["address_1"])
+    address_input_2 = st.text_input("Enter the second Address:", key="address_input_2", value=st.session_state["address_2"])
+
+    # Set default locations
+    default_location_1 = "" 
+    default_location_2 = "" 
+    
+    # Create a Google Map iframe to show both addresses and directions
+    map_html = f'''
+        <iframe id="googleMap" width="100%" height="600" frameborder="0" style="border:0" 
+        src="https://www.google.com/maps/embed/v1/directions?key={google_api_key}&origin={address_input_1 or default_location_1}&destination={address_input_2 or default_location_2}" 
+        allowfullscreen></iframe>
+    '''
+    components.html(map_html, height=600)
+
+    # Listen for messages from JavaScript and update the address in session_state
+    components.html(
+        """
+        <script>
+            window.addEventListener("message", function(event) {
+                if (event.origin !== "http://localhost:8501") return;
+
+                var data = JSON.parse(event.data);
+                if (data.address_1) {
+                    // Send the addresses back to Streamlit
+                    window.parent.document.dispatchEvent(new CustomEvent("update_address_1", {detail: data.address_1}));
+                    window.parent.document.dispatchEvent(new CustomEvent("update_address_2", {detail: data.address_2}));
+                }
+            }, false);
+        </script>
+        """,
+        height=0,
+    )
+
+    # JavaScript event listener in Streamlit to capture the updated addresses
+    st.session_state["address_1"] = st.experimental_get_query_params().get("address_1", [""])[0]
+    st.session_state["address_2"] = st.experimental_get_query_params().get("address_2", [""])[0]
 
 def main():
     st.image("./assets/logo.png", width=400)
@@ -108,6 +157,9 @@ def main():
                 #     st.success("Image successfully pushed to the database")
                 # else:
                 #     st.error("Failed to push image to the database")
+
+        # Display the Google Map
+        display_map()
 
     with tab2:
         # OpenCV webcam capture

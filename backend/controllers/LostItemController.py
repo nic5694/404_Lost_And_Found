@@ -6,6 +6,7 @@ from bson import ObjectId
 from bson.json_util import dumps
 
 client = MongoClient.client
+upload_service = ImageUploadService.ImageUploadService()
 
 class LostItem(BaseModel):
     image_url: str 
@@ -17,17 +18,11 @@ class LostItem(BaseModel):
 router = APIRouter()
 
 @router.post("/lostitem/add")
-async def say_hello(timeFound: str = Form(...), latitude: float =  Form(...), longitude: float =  Form(...),
-                     image: UploadFile = File(...)
-                    ):
-    print(timeFound)
-    print(latitude)
-    print(longitude)
-    print(image)
+async def say_hello(timeFound: str = Form(...), latitude: float =  Form(...), longitude: float =  Form(...), image: UploadFile = File(...)):
     mydb = client['LostAndFoundCluster']
     mycol = mydb["LostItems"]
 
-    url = await ImageUploadService.upload_image(image)
+    url = await upload_service.upload_image(image)
     #TODO: add call to model to give it a description
     description = ""
 

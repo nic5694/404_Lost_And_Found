@@ -215,13 +215,13 @@ class ImageDetector:
 
         # iteratively store similarity of stored images to target image
         sim_dict = {}
-
+        image_id_map = {}
         for record in self.collection.find({"embedding": {"$exists": True}}):
             file_path = record["image_url"]
             vector = torch.tensor(record["embedding"]).to(self.device)
             sim = cosine(vector, target_vector)[0].item()
             sim_dict[file_path] = sim
-            sim_dict["id"] = record["_id"]
+            image_id_map[record["_id"]] = file_path
 
         # sort based on decreasing similarity
         items = sim_dict.items()
@@ -233,7 +233,7 @@ class ImageDetector:
 
         self.output_images(sim_dict, target_image_url)
 
-        return sim_dict
+        return {"simdict": sim_dict, "image_id_map": image_id_map}
 
     def output_images(self, similar, target_image_url):
         self.display_img(target_image_url, "original")

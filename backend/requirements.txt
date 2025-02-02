@@ -1,4 +1,6 @@
 fastapi
+python-dotenv
+azure-storage-blob
 uvicorn
 motor
 streamlit

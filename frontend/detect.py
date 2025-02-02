@@ -84,7 +84,7 @@ def main():
     st.image("./assets/logo.png", width=400)
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Search your item", "Real-Time Detection"])
+    tab1, tab2, tab3 = st.tabs(["Search your item", "Real-Time Detection", "map"])
 
     with tab1:
         col1, col2 = st.columns(2)
@@ -228,6 +228,9 @@ def main():
 
         # Release the webcam when inference is stopped
         cap.release()
+
+    with tab3:
+        display_map()
 
 
 if __name__ == "__main__":

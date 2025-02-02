@@ -1,5 +1,4 @@
 import streamlit as st
-
 from browse import main as browse_page
 from detect import main as detect_page
 from streamlit_option_menu import option_menu

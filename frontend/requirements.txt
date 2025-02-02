@@ -4,3 +4,5 @@ pillow
 opencv-python
 numpy
 requests
+folium
+stramlit-folium

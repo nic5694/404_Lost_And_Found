@@ -6,6 +6,7 @@ import cv2
 import io
 import streamlit.components.v1 as components
 import json
+import os
 
 # Backend URL
 BACKEND_URL = (

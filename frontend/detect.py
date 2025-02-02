@@ -45,6 +45,16 @@ def log_to_console(message: str) -> None:
 """
     components.html(js_code)
 
+def get_key_by_value(d, value):
+    """
+    Returns the first key in the dictionary `d` that matches the given `value`.
+    If no matching key is found, returns None.
+    """
+    for key, val in d.items():
+        if val == value:
+            return key
+    return None
+
 def main():
     st.image("./assets/logo.png", width=400)
 
@@ -94,7 +104,9 @@ def main():
             #TODO: change to real URL
             response = requests.post(f"{BACKUP_URL}/process_image", files=files)
             try:
-                similar_images = response.json()
+                parsed_response = response.json()
+                similar_images = json.loads(parsed_response["similar_images"])
+                image_id_map = json.loads(parsed_response["image_id_map"])
             except requests.exceptions.JSONDecodeError:
                 st.error("Failed to decode JSON response")
                 return
@@ -104,6 +116,7 @@ def main():
             st.write("Similar Images:")
             cols = st.columns(len(similar_images))  # Create columns for each image
             for (img_url, similarity), col in zip(similar_images.items(), cols):
+                object_id = get_key_by_value(image_id_map, img_url)
                 # Fetch the image from the URL
                 img_response = requests.get(img_url)
                 img = Image.open(io.BytesIO(img_response.content)).resize(
@@ -114,8 +127,8 @@ def main():
                     caption=f"Similarity: {similarity:.2f}",
                     use_container_width=True,
                 )
-                # if st.button(f"I lost this!", key = item_id, use_container_width=True):
-                #     claim(item_id["$oid"], location)
+                if st.button(f"I lost this!", key = object_id, use_container_width=True):
+                    claim(object_id, location)
 
             st.write("Couldn't find your image here?")
             # Button to push the image to the database

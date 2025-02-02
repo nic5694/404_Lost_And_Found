@@ -1,9 +1,11 @@
-from backend.service import ImageAnalyzerService, ImageUploadService
-from controllers import LostItemController, LookingForItemController
+from controllers import LostItemController
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from PIL import Image
 import numpy as np
 from ultralytics import YOLO
+
+from service.ImageAnalyzerService import ImageAnalyzerService
+from service.ImageUploadService import ImageUploadService
 from similarity_model import ImageDetector
 import io
 from pymongo import MongoClient
@@ -23,7 +25,6 @@ image_analyzer_service = ImageAnalyzerService()
 yolo_model = YOLO("yolov8n.pt")  # Load a pre-trained YOLOv8 model
 
 app.include_router(LostItemController.router)
-app.include_router(LookingForItemController.router)
 
 
 @app.get("/get_locations")

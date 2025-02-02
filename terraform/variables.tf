@@ -12,3 +12,7 @@ variable "subscription_id" {
   type        = string
   description = "The Azure subscription ID."
 }
+variable "action_members_emails" {
+  type        = list(string)
+  description = "List of action members' emails."
+}

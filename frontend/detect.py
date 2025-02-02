@@ -65,7 +65,12 @@ def claim(item_id, location):
         st.error("Failed to claim item")
 
 def main():
-    st.image("./assets/logo.png", width=400)
+    # st.image("./assets/logo.png", width=400)
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.join(base_path, "assets", "logo.png")
+
+    st.image(logo_path, width=400)
+
 
     # Create tabs
     tab1, tab2 = st.tabs(["Use a picture", "Use Real-Time Detection"])

@@ -1,16 +1,21 @@
 # 404 Lost & Found
-Ever lost something precious and wished you had a digital detective on your side? Meet 404 Lost&Found – your AI-powered personal item finder and data visualization tool
+![ConUHacks IX Winner](https://img.shields.io/badge/-ConUHacks%20IX%20Winning%20Project-8A2BE2?style=for-the-badge&logo=github&logoColor=white)  
 
----
+Ever lost something precious and wished you had a digital detective on your side? Meet 404 Lost & Found – your AI-powered personal item finder and data visualization tool
+
+## 🔗 Links  
+Check out our demo and project submission:  
+
+[![YouTube](https://img.shields.io/badge/-YouTube-FF0000?logo=youtube&logoColor=white)]([https://www.youtube.com](https://youtu.be/BHq4QkTe6PE))  
+[![Devpost](https://img.shields.io/badge/-Devpost-003E54?logo=devpost&logoColor=white)]([https://www.devpost.com](https://devpost.com/software/404-lost-found))  
 
 ## 📖 Overview  
-**404: Lost & Found** is an intelligent lost-and-found platform that combines **YOLO for real-time object detection** and **ResNet for image similarity scoring** to help users identify and recover lost items. Deployed on **Azure Web Apps**, this system features:
+**404: Lost & Found** is an intelligent lost-and-found platform that combines **YOLOv8 for real-time object detection** and **ResNet for image similarity scoring** to help users identify and recover lost items. Deployed on **Azure Web Apps**, this system features:
 
 - 🎯 **Custom object detection** (YOLO) for precise item localization
 - 🔍 **ResNet-based similarity scoring** for matching lost/found items
 - ☁️ **Cloud-native architecture** with Azure Blob Storage and MongoDB
 
----
 
 ## ✨ Key Features  
 - **Real-Time Object Detection**: YOLO model identifies items in uploaded images (e.g., "laptop", "backpack", "keys").  
@@ -18,7 +23,6 @@ Ever lost something precious and wished you had a digital detective on your side
 - **Scalable Storage**: Azure Blob Storage manages item images with metadata stored in MongoDB.  
 - **FastAPI Backend**: High-performance API endpoints for seamless integration.  
 
----
 
 ## 🛠️ Tech Stack  
 ### **AI/ML Core**  

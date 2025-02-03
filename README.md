@@ -36,10 +36,14 @@ Check out our demo and project submission:
 ![FastAPI](https://img.shields.io/badge/-FastAPI-009688?logo=fastapi&logoColor=white)
 ![Azure](https://img.shields.io/badge/-Azure-0089D6?logo=microsoft-azure&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/-MongoDB-47A248?logo=mongodb&logoColor=white)  
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
 - **FastAPI** REST API with Python 3.10+  
 - **Azure Web Apps** (PaaS) for API deployment  
 - **Azure Blob Storage** for image management  
 - **MongoDB Atlas** for item metadata storage
+- **Github Actions** for CI/CD, building and pushing Docker images to ACR
+- **Terraform** for Infrastructure as Code (IaC) deployment on Azure
 
 ## How to run the project
 

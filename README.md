@@ -6,8 +6,8 @@ Ever lost something precious and wished you had a digital detective on your side
 ## 🔗 Links  
 Check out our demo and project submission:  
 
-[![YouTube](https://img.shields.io/badge/-YouTube-FF0000?logo=youtube&logoColor=white)]([https://www.youtube.com](https://youtu.be/BHq4QkTe6PE))  
-[![Devpost](https://img.shields.io/badge/-Devpost-003E54?logo=devpost&logoColor=white)]([https://www.devpost.com](https://devpost.com/software/404-lost-found))  
+[![YouTube](https://img.shields.io/badge/-YouTube-FF0000?logo=youtube&logoColor=white)](https://youtu.be/BHq4QkTe6PE)  
+[![Devpost](https://img.shields.io/badge/-Devpost-003E54?logo=devpost&logoColor=white)](https://devpost.com/software/404-lost-found)  
 
 ## 📖 Overview  
 **404: Lost & Found** is an intelligent lost-and-found platform that combines **YOLOv8 for real-time object detection** and **ResNet for image similarity scoring** to help users identify and recover lost items. Deployed on **Azure Web Apps**, this system features:
